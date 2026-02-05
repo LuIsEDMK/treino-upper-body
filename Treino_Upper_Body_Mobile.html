@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Upper Body Pro - 86kg</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --p: #FF6B6B; --s: #4ECDC4; --a: #FFE66D; --d: #2C3E50; --l: #F7F9FC; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: var(--d); }
+        .container { max-width: 100%; padding: 10px; padding-bottom: 100px; }
+
+        /* Header */
+        .header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; 
+                  padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; }
+        .header h1 { font-size: 1.5rem; margin-bottom: 5px; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .stat { background: linear-gradient(135deg, var(--p), #ee5a5a); color: white; padding: 10px; border-radius: 12px; }
+        .stat.b { background: linear-gradient(135deg, var(--s), #3dbdb4); }
+        .stat.y { background: linear-gradient(135deg, var(--a), #ffd93d); color: var(--d); }
+        .stat n { font-size: 1.5rem; font-weight: bold; display: block; }
+        .stat l { font-size: 0.7rem; opacity: 0.9; }
+
+        /* Navegação */
+        .nav { display: flex; overflow-x: auto; gap: 10px; padding: 10px 0; margin-bottom: 15px; scrollbar-width: none; }
+        .nav::-webkit-scrollbar { display: none; }
+        .day { flex: 0 0 auto; padding: 15px 20px; background: rgba(255,255,255,0.9); border: none; 
+               border-radius: 15px; font-weight: bold; cursor: pointer; min-width: 80px; text-align: center; }
+        .day.active { background: var(--p); color: white; transform: scale(1.05); }
+        .day.rest { background: #95a5a6; color: white; }
+        .day n { font-size: 0.9rem; display: block; }
+        .day f { font-size: 0.7rem; opacity: 0.8; margin-top: 3px; }
+
+        /* Conteúdo */
+        .content { display: none; }
+        .content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Grupos musculares */
+        .group { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 20px; margin-bottom: 15px; }
+        .gh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; 
+              padding-bottom: 10px; border-bottom: 2px solid var(--l); }
+        .gt { font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .gv { background: var(--p); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; }
+
+        /* Cards de exercício */
+        .ex { background: var(--l); border-radius: 15px; padding: 15px; margin-bottom: 10px; 
+              border-left: 4px solid var(--s); transition: all 0.3s; }
+        .ex:hover { transform: translateX(5px); }
+        .ex.done { border-left-color: #2ECC71; opacity: 0.7; }
+        .eh { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .en { font-weight: bold; font-size: 1rem; flex: 1; margin-left: 10px; }
+        .eo { background: var(--d); color: white; width: 30px; height: 30px; border-radius: 50%; 
+              display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; }
+        .check { background: white; border: 2px solid #2ECC71; color: #2ECC71; width: 40px; height: 40px; 
+                 border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .check:hover { background: #2ECC71; color: white; }
+        .check.ok { background: #2ECC71; color: white; }
+
+        .dt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .db { background: white; padding: 8px; border-radius: 8px; text-align: center; }
+        .dl { font-size: 0.7rem; color: #666; text-transform: uppercase; }
+        .dv { font-weight: bold; color: var(--d); font-size: 0.9rem; }
+        .tec { background: var(--a); color: var(--d); padding: 8px 12px; border-radius: 8px; 
+               font-size: 0.8rem; margin-top: 10px; font-weight: 600; }
+
+        /* Timer flutuante */
+        .timer { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--p); 
+                 border: none; border-radius: 50%; color: white; font-size: 1.5rem; cursor: pointer; 
+                 box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 999; display: flex; align-items: center; justify-content: center; }
+        .timer-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; 
+                      box-shadow: 0 -5px 20px rgba(0,0,0,0.2); display: none; z-index: 1000; }
+        .timer-panel.on { display: block; }
+        .time-display { font-size: 3rem; font-weight: bold; text-align: center; color: var(--p); font-family: monospace; }
+        .time-ctrl { display: flex; justify-content: center; gap: 20px; margin-top: 15px; }
+        .time-btn { padding: 12px 30px; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; }
+        .time-btn.s { background: #2ECC71; color: white; }
+        .time-btn.r { background: var(--p); color: white; }
+        .presets { display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .preset { padding: 8px 15px; background: var(--l); border: none; border-radius: 15px; cursor: pointer; font-size: 0.9rem; }
+
+        /* Calculadora */
+        .calc { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 20px; margin-top: 20px; }
+        .calc h3 { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .calc-in { width: 100%; padding: 15px; border: 2px solid var(--l); border-radius: 10px; font-size: 1rem; margin-bottom: 10px; }
+        .calc-res { background: var(--s); color: white; padding: 15px; border-radius: 10px; text-align: center; 
+                   font-weight: bold; margin-top: 10px; display: none; }
+        .calc-res.show { display: block; }
+
+        /* Responsivo */
+        @media (max-width: 380px) {
+            .header h1 { font-size: 1.2rem; }
+            .dt { grid-template-columns: 1fr; }
+            .day { padding: 12px 15px; min-width: 70px; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>💪 Upper Body Pro</h1>
+            <div style="color: #666; font-size: 0.9rem;">86kg | Recomposição Corporal</div>
+            <div class="stats">
+                <div class="stat"><n>52</n><l>Exercícios</l></div>
+                <div class="stat b"><n>5</n><l>Dias/Sem</l></div>
+                <div class="stat y"><n id="done">0</n><l>Concluídos</l></div>
+            </div>
+        </div>
+
+        <!-- Navegação -->
+        <div class="nav">
+            <button class="day active" onclick="show('seg', this)"><n>SEG</n><f>Peito+Tri</f></button>
+            <button class="day" onclick="show('ter', this)"><n>TER</n><f>Costas+Bi</f></button>
+            <button class="day rest" onclick="show('qua', this)"><n>QUA</n><f>Descanso</f></button>
+            <button class="day" onclick="show('qui', this)"><n>QUI</n><f>Peito+Ombro</f></button>
+            <button class="day" onclick="show('sex', this)"><n>SEX</n><f>Costas+Braço</f></button>
+            <button class="day" onclick="show('sab', this)"><n>SÁB</n><f>Braços</f></button>
+            <button class="day rest" onclick="show('dom', this)"><n>DOM</n><f>Descanso</f></button>
+        </div>
+
+        <!-- SEGUNDA -->
+        <div id="seg" class="content active">
+            <div class="group">
+                <div class="gh"><div class="gt">🎯 Peitoral</div><span class="gv">17 séries</span></div>
+
+                <div class="ex" data-id="s1"><div class="eh"><span class="eo">A1</span><span class="en">Supino Reto Barra</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">6-8</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">2-3min</div></div></div>
+                <div class="tec">🔥 Falha muscular</div></div>
+
+                <div class="ex" data-id="s2"><div class="eh"><span class="eo">A2</span><span class="en">Supino Inclinado Halter</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">8-10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">90s</div></div></div>
+                <div class="tec">⏱️ 2s contração no topo</div></div>
+
+                <div class="ex" data-id="s3"><div class="eh"><span class="eo">A3</span><span class="en">Crucifixo Reto Halter</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">10-12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">💪 Pico 2s</div></div>
+
+                <div class="ex" data-id="s4"><div class="eh"><span class="eo">A4</span><span class="en">Pullover Halter</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🔄 Alongamento máximo</div></div>
+
+                <div class="ex" data-id="s5"><div class="eh"><span class="eo">A5</span><span class="en">Crossover Polia Alta</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">✨ Squeeze final</div></div>
+            </div>
+
+            <div class="group">
+                <div class="gh"><div class="gt">💪 Tríceps</div><span class="gv">13 séries</span></div>
+
+                <div class="ex" data-id="s6"><div class="eh"><span class="eo">B1</span><span class="en">Tríceps Testa Barra W</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🎯 Cotovelos travados</div></div>
+
+                <div class="ex" data-id="s7"><div class="eh"><span class="eo">B2</span><span class="en">Tríceps Francês Unilateral</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🔄 Alongamento total</div></div>
+
+                <div class="ex" data-id="s8"><div class="eh"><span class="eo">B3</span><span class="en">Tríceps Corda Polia</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">🎯 Abrir no final</div></div>
+            </div>
+        </div>
+
+        <!-- TERÇA -->
+        <div id="ter" class="content">
+            <div class="group">
+                <div class="gh"><div class="gt">🦍 Costas</div><span class="gv">21 séries</span></div>
+
+                <div class="ex" data-id="t1"><div class="eh"><span class="eo">A1</span><span class="en">Levantamento Terra</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">5-6</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">3min</div></div></div>
+                <div class="tec">🏋️ Força pura - Postura!</div></div>
+
+                <div class="ex" data-id="t2"><div class="eh"><span class="eo">A2</span><span class="en">Barra Fixa (Pegada Larga)</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">6-10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">2min</div></div></div>
+                <div class="tec">💪 Peso corporal</div></div>
+
+                <div class="ex" data-id="t3"><div class="eh"><span class="eo">A3</span><span class="en">Remada Curvada Barra</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">8-10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">90s</div></div></div>
+                <div class="tec">🎯 Cotovelos junto ao corpo</div></div>
+
+                <div class="ex" data-id="t4"><div class="eh"><span class="eo">A4</span><span class="en">Remada Unilateral Halter</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">10-12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🔄 Rotação no topo</div></div>
+
+                <div class="ex" data-id="t5"><div class="eh"><span class="eo">A5</span><span class="en">Pulldown Polia Frente</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🎯 Puxar até esternum</div></div>
+
+                <div class="ex" data-id="t6"><div class="eh"><span class="eo">A6</span><span class="en">Remada Baixa Polia</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">💪 Squeeze escápulas</div></div>
+            </div>
+
+            <div class="group">
+                <div class="gh"><div class="gt">💪 Bíceps</div><span class="gv">13 séries</span></div>
+
+                <div class="ex" data-id="t7"><div class="eh"><span class="eo">B1</span><span class="en">Rosca Direta Barra</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">8-10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">90s</div></div></div>
+                <div class="tec">🚫 Sem balançar</div></div>
+
+                <div class="ex" data-id="t8"><div class="eh"><span class="eo">B2</span><span class="en">Rosca Martelo Halter</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">10-12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">💪 Trabalha braquial</div></div>
+
+                <div class="ex" data-id="t9"><div class="eh"><span class="eo">B3</span><span class="en">Rosca Scott Unilateral</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🎯 Pico contração</div></div>
+
+                <div class="ex" data-id="t10"><div class="eh"><span class="eo">B4</span><span class="en">Rosca Concentrada</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">🎯 Braço apoiado na coxa</div></div>
+            </div>
+        </div>
+
+        <!-- QUARTA - Descanso -->
+        <div id="qua" class="content">
+            <div class="group" style="text-align: center; padding: 40px;">
+                <div style="font-size: 4rem; margin-bottom: 20px;">😴</div>
+                <h2>Dia de Descanso Ativo</h2>
+                <p style="margin-top: 15px; color: #666;">Faça uma caminhada leve de 30-45 minutos</p>
+                <p style="margin-top: 10px; color: #666;">Ou alongamentos e mobilidade</p>
+                <div style="margin-top: 30px; padding: 20px; background: var(--l); border-radius: 15px;">
+                    <strong>Dica:</strong> O descanso é quando o músculo cresce! 💪
+                </div>
+            </div>
+        </div>
+
+        <!-- Adicionar os outros dias de forma similar... -->
+        <!-- QUINTA -->
+        <div id="qui" class="content">
+            <div class="group">
+                <div class="gh"><div class="gt">🎯 Peitoral</div><span class="gv">13 séries</span></div>
+
+                <div class="ex" data-id="q1"><div class="eh"><span class="eo">A1</span><span class="en">Supino Inclinado Barra</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">6-8</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">2-3min</div></div></div>
+                <div class="tec">🔥 Foco parte superior peito</div></div>
+
+                <div class="ex" data-id="q2"><div class="eh"><span class="eo">A2</span><span class="en">Crucifixo Inclinado Halter</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">10-12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🔄 Alongamento profundo</div></div>
+
+                <div class="ex" data-id="q3"><div class="eh"><span class="eo">A3</span><span class="en">Supino Reto Halter</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">8-10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">90s</div></div></div>
+                <div class="tec">🎯 Controle total</div></div>
+
+                <div class="ex" data-id="q4"><div class="eh"><span class="eo">A4</span><span class="en">Pullover Cabo</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">💨 Expansão torácica</div></div>
+            </div>
+
+            <div class="group">
+                <div class="gh"><div class="gt">🎪 Ombros</div><span class="gv">14 séries</span></div>
+
+                <div class="ex" data-id="q5"><div class="eh"><span class="eo">B1</span><span class="en">Desenvolvimento Militar</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">8-10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">90s</div></div></div>
+                <div class="tec">🏋️ Barra ou halter</div></div>
+
+                <div class="ex" data-id="q6"><div class="eh"><span class="eo">B2</span><span class="en">Elevação Lateral Halter</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12-15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🎯 Cotovelos flexionados</div></div>
+
+                <div class="ex" data-id="q7"><div class="eh"><span class="eo">B3</span><span class="en">Elevação Frontal Corda</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">🔄 Alternado ou simultâneo</div></div>
+
+                <div class="ex" data-id="q8"><div class="eh"><span class="eo">B4</span><span class="en">Crucifixo Invertido Halter</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🎯 Posteriores de ombro</div></div>
+            </div>
+        </div>
+
+        <!-- SEXTA -->
+        <div id="sex" class="content">
+            <div class="group">
+                <div class="gh"><div class="gt">🦍 Costas</div><span class="gv">17 séries</span></div>
+
+                <div class="ex" data-id="x1"><div class="eh"><span class="eo">A1</span><span class="en">Remada Cavalinho</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">8-10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">2min</div></div></div>
+                <div class="tec">🎯 Pegada neutra</div></div>
+
+                <div class="ex" data-id="x2"><div class="eh"><span class="eo">A2</span><span class="en">Pulldown Pegada Fechada</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">10-12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">90s</div></div></div>
+                <div class="tec">💪 Foco latíssimo</div></div>
+
+                <div class="ex" data-id="x3"><div class="eh"><span class="eo">A3</span><span class="en">Remada Serrote</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">10-12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🔄 Unilateral com apoio</div></div>
+
+                <div class="ex" data-id="x4"><div class="eh"><span class="eo">A4</span><span class="en">Pullover Máquina</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🎯 Costas + Peito</div></div>
+
+                <div class="ex" data-id="x5"><div class="eh"><span class="eo">A5</span><span class="en">Shrug Halter/Barra</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12-15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">💪 Trapézio</div></div>
+            </div>
+
+            <div class="group">
+                <div class="gh"><div class="gt">💪 Bíceps</div><span class="gv">13 séries</span></div>
+
+                <div class="ex" data-id="x6"><div class="eh"><span class="eo">B1</span><span class="en">Rosca 21s (Barra)</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">21</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">90s</div></div></div>
+                <div class="tec">🔥 7 baixo + 7 alto + 7 completo</div></div>
+
+                <div class="ex" data-id="x7"><div class="eh"><span class="eo">B2</span><span class="en">Rosca Alternada Halter</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🔄 Rotação supinada</div></div>
+
+                <div class="ex" data-id="x8"><div class="eh"><span class="eo">B3</span><span class="en">Rosca Inversa Barra</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">💪 Antebraço + Bíceps braquial</div></div>
+
+                <div class="ex" data-id="x9"><div class="eh"><span class="eo">B4</span><span class="en">Rosca Concentrada</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">🎯 Braço apoiado na coxa</div></div>
+            </div>
+
+            <div class="group">
+                <div class="gh"><div class="gt">🦾 Tríceps</div><span class="gv">9 séries</span></div>
+
+                <div class="ex" data-id="x10"><div class="eh"><span class="eo">C1</span><span class="en">Tríceps Testa Unilateral</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🔄 Alongamento máximo</div></div>
+
+                <div class="ex" data-id="x11"><div class="eh"><span class="eo">C2</span><span class="en">Tríceps Banco</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">🎯 Fundos entre bancos</div></div>
+
+                <div class="ex" data-id="x12"><div class="eh"><span class="eo">C3</span><span class="en">Tríceps Kickback</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">🔄 Unilateral com halter</div></div>
+            </div>
+        </div>
+
+        <!-- SÁBADO -->
+        <div id="sab" class="content">
+            <div class="group">
+                <div class="gh"><div class="gt">💪 Bíceps - Bomba</div><span class="gv">14 séries</span></div>
+
+                <div class="ex" data-id="sa1"><div class="eh"><span class="eo">A1</span><span class="en">Rosca Direta Barra</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">90s</div></div></div>
+                <div class="tec">🔥 Força</div></div>
+
+                <div class="ex" data-id="sa2"><div class="eh"><span class="eo">A2</span><span class="en">Rosca Martelo</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">💪 Volume</div></div>
+
+                <div class="ex" data-id="sa3"><div class="eh"><span class="eo">A3</span><span class="en">Rosca Scott</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🎯 Pico</div></div>
+
+                <div class="ex" data-id="sa4"><div class="eh"><span class="eo">A4</span><span class="en">Rosca Concentrada</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">🔥 Burnout</div></div>
+            </div>
+
+            <div class="group">
+                <div class="gh"><div class="gt">🦾 Tríceps - Bomba</div><span class="gv">14 séries</span></div>
+
+                <div class="ex" data-id="sa5"><div class="eh"><span class="eo">B1</span><span class="en">Tríceps Corda</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">💪 Volume</div></div>
+
+                <div class="ex" data-id="sa6"><div class="eh"><span class="eo">B2</span><span class="en">Tríceps Testa</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">4</div></div><div class="db"><div class="dl">Reps</div><div class="dv">10</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">90s</div></div></div>
+                <div class="tec">🔥 Força</div></div>
+
+                <div class="ex" data-id="sa7"><div class="eh"><span class="eo">B3</span><span class="en">Tríceps Francês</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🔄 Alongamento</div></div>
+
+                <div class="ex" data-id="sa8"><div class="eh"><span class="eo">B4</span><span class="en">Tríceps Mergulho Banco</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">Falha</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">🔥 Queima final</div></div>
+            </div>
+
+            <div class="group">
+                <div class="gh"><div class="gt">🎪 Ombros</div><span class="gv">6 séries</span></div>
+
+                <div class="ex" data-id="sa9"><div class="eh"><span class="eo">C1</span><span class="en">Elevação Lateral Drop-set</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">12/10/8</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">60s</div></div></div>
+                <div class="tec">🔥 3 quedas de peso</div></div>
+
+                <div class="ex" data-id="sa10"><div class="eh"><span class="eo">C2</span><span class="en">Elevação Frontal</span><button class="check" onclick="toggle(this)">✓</button></div>
+                <div class="dt"><div class="db"><div class="dl">Séries</div><div class="dv">3</div></div><div class="db"><div class="dl">Reps</div><div class="dv">15</div></div><div class="db"><div class="dl">Descanso</div><div class="dv">45s</div></div></div>
+                <div class="tec">🎯 Barra ou halter</div></div>
+            </div>
+        </div>
+
+        <!-- DOMINGO -->
+        <div id="dom" class="content">
+            <div class="group" style="text-align: center; padding: 40px;">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🛌</div>
+                <h2>Descanso Total</h2>
+                <p style="margin-top: 15px; color: #666;">Recupere para a próxima semana!</p>
+                <div style="margin-top: 30px; padding: 20px; background: var(--l); border-radius: 15px;">
+                    <strong>Próximo treino:</strong> Segunda-feira - Peito + Tríceps 💪
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculadora de Cargas -->
+        <div class="calc">
+            <h3>🧮 Calculadora de Cargas</h3>
+            <input type="number" class="calc-in" id="cargaMax" placeholder="Sua carga máxima (1RM) em kg" oninput="calcular()">
+            <div class="calc-res" id="resultado">
+                <div>60%: <span id="p60"></span>kg (12-15 reps)</div>
+                <div>70%: <span id="p70"></span>kg (10-12 reps)</div>
+                <div>80%: <span id="p80"></span>kg (8-10 reps)</div>
+                <div>85%: <span id="p85"></span>kg (6-8 reps)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timer Flutuante -->
+    <button class="timer" onclick="toggleTimer()">⏱️</button>
+
+    <div class="timer-panel" id="timerPanel">
+        <div class="time-display" id="display">00:00</div>
+        <div class="time-ctrl">
+            <button class="time-btn s" onclick="startTimer()">▶️ Iniciar</button>
+            <button class="time-btn r" onclick="resetTimer()">🔄 Reset</button>
+        </div>
+        <div class="presets">
+            <button class="preset" onclick="setTime(45)">45s</button>
+            <button class="preset" onclick="setTime(60)">60s</button>
+            <button class="preset" onclick="setTime(90)">90s</button>
+            <button class="preset" onclick="setTime(120)">2min</button>
+            <button class="preset" onclick="setTime(180)">3min</button>
+        </div>
+    </div>
+
+    <script>
+        // Navegação entre dias
+        function show(day, btn) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.day').forEach(d => d.classList.remove('active'));
+            document.getElementById(day).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Marcar exercício como concluído
+        let concluidos = 0;
+        function toggle(btn) {
+            const card = btn.closest('.ex');
+            card.classList.toggle('done');
+            btn.classList.toggle('ok');
+            btn.textContent = btn.classList.contains('ok') ? '✅' : '✓';
+            concluidos = document.querySelectorAll('.ex.done').length;
+            document.getElementById('done').textContent = concluidos;
+        }
+
+        // Timer
+        let time = 0;
+        let interval;
+        let running = false;
+
+        function toggleTimer() {
+            document.getElementById('timerPanel').classList.toggle('on');
+        }
+
+        function setTime(seconds) {
+            time = seconds;
+            updateDisplay();
+            if (running) {
+                clearInterval(interval);
+                running = false;
+            }
+        }
+
+        function startTimer() {
+            if (running) {
+                clearInterval(interval);
+                running = false;
+                return;
+            }
+            if (time === 0) time = 60;
+            running = true;
+            interval = setInterval(() => {
+                if (time > 0) {
+                    time--;
+                    updateDisplay();
+                } else {
+                    clearInterval(interval);
+                    running = false;
+                    alert('⏱️ Tempo finalizado!');
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            clearInterval(interval);
+            running = false;
+            time = 0;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const m = Math.floor(time / 60).toString().padStart(2, '0');
+            const s = (time % 60).toString().padStart(2, '0');
+            document.getElementById('display').textContent = `${m}:${s}`;
+        }
+
+        // Calculadora de cargas
+        function calcular() {
+            const max = parseFloat(document.getElementById('cargaMax').value);
+            if (max > 0) {
+                document.getElementById('p60').textContent = (max * 0.6).toFixed(1);
+                document.getElementById('p70').textContent = (max * 0.7).toFixed(1);
+                document.getElementById('p80').textContent = (max * 0.8).toFixed(1);
+                document.getElementById('p85').textContent = (max * 0.85).toFixed(1);
+                document.getElementById('resultado').classList.add('show');
+            }
+        }
+
+        // Salvar progresso no localStorage
+        window.onload = function() {
+            const saved = localStorage.getItem('treinoConcluidos');
+            if (saved) {
+                const ids = JSON.parse(saved);
+                ids.forEach(id => {
+                    const btn = document.querySelector(`[data-id="${id}"] .check`);
+                    if (btn) toggle(btn);
+                });
+            }
+        };
+
+        window.onbeforeunload = function() {
+            const done = [];
+            document.querySelectorAll('.ex.done').forEach(ex => {
+                done.push(ex.getAttribute('data-id'));
+            });
+            localStorage.setItem('treinoConcluidos', JSON.stringify(done));
+        };
+    </script>
+</body>
+</html>
